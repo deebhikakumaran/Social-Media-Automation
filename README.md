@@ -35,12 +35,16 @@ The agent operates in a sequential, stateful workflow orchestrated by **LangGrap
 
 1.  **Clone the repository:**
 
-    `git clone https://github.com/deebhikakumaran/SocialMediaAutomation.git`
-    `cd SocialMediaAutomation`
+    ```
+    git clone https://github.com/deebhikakumaran/SocialMediaAutomation.git
+    cd SocialMediaAutomation
+    ```
 
 2.  **Install dependencies:**
 
-    `pip install -r requirements.txt`
+    ```
+    pip install -r requirements.txt
+    ```
 
 ### Setup
 
