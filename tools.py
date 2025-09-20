@@ -12,6 +12,25 @@ load_dotenv()
 firecrawl = Firecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
 
 @tool
+def add_url_to_sheet(sheet_name: str, link_column: str, url: str) -> int:
+    """
+    Adds a new URL to the specified Google Sheet column and returns the new row number.
+    """
+    try:
+        gc = gspread.service_account(filename="credentials.json")
+        worksheet = gc.open(sheet_name).sheet1
+        col_index = worksheet.find(link_column).col
+        worksheet.append_row([url], value_input_option='USER_ENTERED')
+        row_number = len(worksheet.col_values(col_index))
+        
+        print(f"URL added to row {row_number}.")
+        return row_number
+        
+    except Exception as e:
+        print(f"Failed to add URL to Google Sheet: {e}")
+        raise e
+    
+@tool
 def get_article_url(sheet_name: str, link_column: str) -> Optional[str]:
     """
     Fetches the single latest news media link from the last row of a specified Google Sheet.

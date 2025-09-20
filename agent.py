@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langgraph.graph import StateGraph, END
 from openai import OpenAI
-from tools import get_article_url, scrape_article, post_to_linkedin, post_to_twitter, update_google_sheet
+from tools import get_article_url, scrape_article, post_to_linkedin, post_to_twitter, update_google_sheet, add_url_to_sheet 
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -26,6 +26,23 @@ class AgentState(TypedDict):
     linkedin_status: str | None
     # twitter_status: str | None
     sheet_row_index: int | None
+
+def add_url_to_sheet_node(state: AgentState) -> dict:
+    url_to_add = state.get("url")
+    if not url_to_add:
+        print("Error: No URL provided to add to sheet.")
+        return {"url": None, "sheet_row_index": None}
+
+    try:
+        row_index = add_url_to_sheet.invoke({
+            "sheet_name": "News Media Links",
+            "link_column": "Media Links",
+            "url": url_to_add
+        })
+        return {"url": url_to_add, "sheet_row_index": row_index}
+    except Exception as e:
+        print(f"Failed to add URL to sheet: {e}")
+        return {"url": None, "sheet_row_index": None}
 
 def fetch_link_node(state: AgentState) -> dict:
     print('Fetching Link')
@@ -224,6 +241,16 @@ def update_sheet_node(state: AgentState) -> dict:
     return {} 
 
 workflow = StateGraph(AgentState)
+
+def router_node(state: AgentState):
+    if state.get("url"):
+        print('Adding URL to gsheet')
+        return {"next": "add_url_path"}
+    else:
+        return {"next": "fetch_path"}
+    
+workflow.add_node("router", router_node)
+workflow.add_node("add_url", add_url_to_sheet_node)
 workflow.add_node("fetch_url", fetch_link_node)
 workflow.add_node("scrape", scrape_node)
 workflow.add_node("summarize", summarize_node)
@@ -231,8 +258,21 @@ workflow.add_node("generate_content", generate_content_node)
 workflow.add_node("post_content", post_content_node)
 workflow.add_node("update_sheet", update_sheet_node)
 
-workflow.set_entry_point("fetch_url")
+workflow.set_entry_point("router")
+
+workflow.add_conditional_edges(
+    "router",         
+    lambda state: state["next"],      
+    {
+        "add_url_path": "add_url",  
+        "fetch_path": "fetch_url"   
+    }
+)
+
+# Connect both paths to the scrape node
+workflow.add_edge("add_url", "scrape")
 workflow.add_edge("fetch_url", "scrape")
+
 workflow.add_edge("scrape", "summarize")
 workflow.add_edge("summarize", "generate_content")
 workflow.add_edge("generate_content", "post_content")

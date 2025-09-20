@@ -1,0 +1,16 @@
+/* post.css */
+
+:root {
+  --primary-color: #465c88;
+  --primary-light: #b9c3d3;
+  --secondary-color: #ff7a30;
+  --accent-light: #e9e3df;
+  --accent-lighter: #e9e3df;
+  --text-dark: #000000;
+  --text-light: #f5f5f5;
+  --nav-links: #666;
+  --nav-button-text: #fff;
+  --footer-text: #A0A0A0;
+  --border-orange: #C45D1C;
+}
+
