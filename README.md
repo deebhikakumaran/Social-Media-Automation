@@ -1,4 +1,4 @@
-# Social Media Automation Agent
+## Social Media Automation Agent
 
 This project is a powerful social media automation agent built with **LangChain** and **LangGraph**. It is designed to automatically fetch the latest news link from a Google Sheet, scrape and summarize the article, generate platform-specific content, and post it to LinkedIn and Twitter. The entire process is exposed via a **FastAPI** server, allowing the agent to be triggered by an API call.
 
@@ -6,8 +6,8 @@ This project is a powerful social media automation agent built with **LangChain*
 
 The agent operates in a sequential, stateful workflow orchestrated by **LangGraph**. Each step is a dedicated "node" that passes information to the next, ensuring a clean and reliable process.
 
-1.  **API Trigger**: The workflow begins when a POST request is sent to the `/run-agent` endpoint of the FastAPI server.
-2.  **Fetch URL**: The agent connects to a designated Google Sheet, finds the last non-empty row, and retrieves the latest news article URL.
+1.  **UI Trigger**: The workflow begins when a user submits a URL via the web-based UI.
+2.  **Fetch or Add URL**: The agent either fetches the latest URL from a Google Sheet or adds a manually provided URL to the sheet.
 3.  **Scrape Content**: The URL is passed to a web scraping tool (Firecrawl) that extracts the main content of the article, removing ads and other noise.
 4.  **Summarize Content**: An LLM (Google Gemini) summarizes the scraped content into a concise, professional summary.
 5.  **Generate Content**: Based on the summary, the LLM generates tailored social media posts for each platform (e.g., a professional post for LinkedIn and a short, engaging tweet for Twitter).
@@ -64,7 +64,11 @@ The agent operates in a sequential, stateful workflow orchestrated by **LangGrap
     ```
 4.  **Google Sheet Columns**: Ensure your Google Sheet has at least the following column headers: `Media Links`, `LinkedIn Content`, `LinkedIn Status`, `Twitter Content`, and `Twitter Status`.
 
-## Running the Server
+## UI and Demonstration
+
+This project includes a simple web-based UI to demonstrate the agent's functionality. The UI acts as a client, sending API requests to the FastAPI server.
+
+**Client-Server Running:**
 
 To start the API server, run the following command in your terminal:
 
@@ -72,7 +76,13 @@ To start the API server, run the following command in your terminal:
 uvicorn main:app --reload
 ```
 
-The server will be available at `http://127.0.0.1:8000`.
+The server will be available at `http://127.0.0.1:8000`. You can then open the index.html file in your browser to access the UI.
+
+**How It Works:**
+
+1. Enter URL: You enter a URL into the text box and click 'Run Agent'.
+2. Client Request: The browser sends a POST request to the server's /run-agent endpoint with your provided URL.
+3. Server-Side Execution: The FastAPI server takes your URL, and triggers the workflow.
 
 ## API Endpoint
 
@@ -82,6 +92,11 @@ You can trigger the agent by sending a POST request to the `/run-agent` endpoint
 
 ```
 POST http://127.0.0.1:8000/run-agent
+Content-Type: application/json
+
+{
+  "url": "https://example.com/your-article"
+}
 ```
 
 ### Response
@@ -104,3 +119,8 @@ The API will return a JSON object with the final state of the agent's run, inclu
   }
 }
 ```
+
+## License
+
+This project is part of an AI Demos Hackathon submission.
+
